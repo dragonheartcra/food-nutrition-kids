@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Food &amp; Nutrition</title>
+<style>
+  :root{
+    --blue:#2f7fd1;
+    --blue-d:#1c5896;
+    --green:#33b56b;
+    --red:#e0554f;
+    --ink:#1d3557;
+    --muted:#5b7794;
+    --card:#ffffff;
+    --shadow:0 6px 18px rgba(31,95,158,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+  body{
+    font-family:"Segoe UI Rounded","Nunito","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(120% 90% at 50% -20%, #ffffff 0%, #eaf4fc 45%, #dceaf8 100%);
+    user-select:none;-webkit-user-select:none;
+    touch-action:manipulation;
+  }
+  [hidden]{display:none!important}
+
+  .app{
+    height:100vh;height:100dvh;
+    display:flex;flex-direction:column;
+    padding:clamp(8px,1.5vh,20px) clamp(12px,1.8vw,30px) clamp(8px,1.4vh,18px);
+    gap:clamp(6px,1vh,14px);
+  }
+
+  /* ---------- header ---------- */
+  header{text-align:center;flex:0 0 auto}
+  h1{
+    margin:0;
+    font-size:clamp(22px,4.2vh,46px);
+    line-height:1.1;
+    color:#2f9e63;
+    letter-spacing:.01em;
+    font-weight:800;
+  }
+  .sub{
+    margin:.5vh 0 0;
+    font-size:clamp(13px,2vh,22px);
+    color:var(--muted);
+    font-weight:600;
+  }
+
+  /* ---------- main ---------- */
+  main{flex:1 1 auto;min-height:0;position:relative}
+
+  .board{
+    min-height:0;
+    background:#fff;
+    border-radius:clamp(12px,1.6vh,22px);
+    box-shadow:var(--shadow);
+    padding:clamp(8px,1.4vh,18px) clamp(8px,1vw,18px);
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  .level{height:100%;display:grid;grid-template-columns:minmax(0,1fr) clamp(150px,21vw,300px);gap:clamp(8px,1.4vw,24px)}
+  .level[hidden]{display:none}
+
+  /* ---------- tray ---------- */
+  .tray{
+    min-height:0;
+    background:rgba(255,255,255,.6);
+    border:2px solid rgba(47,127,209,.16);
+    border-radius:clamp(12px,1.6vh,22px);
+    padding:clamp(7px,1.2vh,16px) clamp(7px,.9vw,14px);
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:clamp(6px,1vh,14px) clamp(6px,.8vw,12px);
+    align-content:start;
+    overflow:hidden;
+  }
+
+  /* ---------- cards ---------- */
+  .card{
+    -webkit-appearance:none;appearance:none;
+    border:2px solid #dbe9f7;
+    background:var(--card);
+    border-radius:clamp(8px,1.4vh,16px);
+    box-shadow:0 2px 0 rgba(31,95,158,.10), 0 4px 10px rgba(31,95,158,.08);
+    padding:clamp(3px,.8vh,10px) clamp(3px,.5vw,8px);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:clamp(1px,.4vh,5px);
+    font:inherit;color:inherit;
+    cursor:grab;touch-action:none;
+    transition:transform .12s ease, box-shadow .12s ease, opacity .18s ease;
+  }
+  .tray .card{aspect-ratio:1/1.06}
+  .card img{width:100%;height:72%;object-fit:contain;pointer-events:none}
+  .card .cap{
+    font-size:clamp(11px,1.7vh,19px);
+    font-weight:700;color:#4a6785;
+    white-space:nowrap;letter-spacing:.01em;
+  }
+  .card.taken{opacity:0;pointer-events:none}
+  .card.locked{cursor:default}
+  .band .card .cap{display:none}
+
+  /* 拖拽跟随体 */
+  .ghost{
+    position:fixed!important;z-index:60;margin:0;
+    pointer-events:none;
+    transform:scale(1.06) rotate(-1.5deg);
+    box-shadow:0 16px 30px rgba(31,95,158,.28);
+    border-color:#9fc8ef;
+  }
+  .ghost.wrong{border-color:var(--red);animation:shake .32s ease}
+
+  @keyframes shake{
+    0%,100%{transform:scale(1.06) rotate(-1.5deg)}
+    25%{transform:scale(1.06) rotate(1.5deg) translateX(-4px)}
+    75%{transform:scale(1.06) rotate(-3deg) translateX(4px)}
+  }
+
+  /* ---------- level 1 table ---------- */
+  .table{
+    width:100%;height:auto;max-height:100%;
+    display:flex;flex-direction:column;
+    border:2px solid #cfe1f4;
+    border-radius:clamp(8px,1.2vh,14px);
+    overflow:hidden;
+    background:#fbfdff;
+  }
+  .thead{
+    display:grid;grid-template-columns:1fr 1fr;
+    background:var(--blue);
+    color:#fff;font-weight:800;text-align:center;
+    font-size:clamp(12px,2.3vh,28px);
+    letter-spacing:.02em;
+  }
+  .thead>div{padding:clamp(5px,1.1vh,14px) 4px}
+  .thead>div+div{border-left:1px solid rgba(255,255,255,.45)}
+  .tbody{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr}
+  .zone{
+    margin:clamp(4px,.8vh,10px);
+    border:2px dashed #bcd7f0;
+    border-radius:clamp(8px,1.4vh,16px);
+    background:#f7fbff;
+    padding:clamp(6px,1.2vh,16px);
+    min-height:clamp(170px,38vh,420px);
+    display:flex;flex-wrap:wrap;gap:clamp(6px,1vh,14px);
+    align-items:center;justify-content:center;align-content:center;
+    transition:background .15s ease,border-color .15s ease,transform .15s ease;
+  }
+  .zone.hover{border-color:var(--blue);background:#e9f4ff;transform:scale(1.012)}
+  .zone.filled{border:2px solid var(--green);background:#f3fdf7}
+  .zone .card{
+    width:calc(50% - clamp(3px,.5vh,7px));
+    aspect-ratio:1/1.06;
+    border:0;box-shadow:none;background:transparent;
+    padding:2% 2% 0;
+  }
+
+  /* ---------- level 2 pyramid ---------- */
+  .pyramid-wrap{height:100%;display:flex;align-items:center;justify-content:center}
+  .pyramid{
+    height:100%;aspect-ratio:1.12;
+    display:flex;flex-direction:column;
+    filter:drop-shadow(0 8px 16px rgba(31,95,158,.22));
+  }
+  .band{
+    position:relative;flex:1;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:clamp(2px,.5vh,6px);
+    color:#fff;
+    transition:filter .15s ease;
+  }
+  .band .label{
+    font-weight:800;
+    font-size:clamp(9px,1.6vh,19px);
+    letter-spacing:.01em;
+    text-shadow:0 1px 2px rgba(0,0,0,.28);
+    text-align:center;line-height:1.1;
+    padding:0 4px;
+    pointer-events:none;
+  }
+  .band .slots{display:flex;gap:clamp(4px,.9vw,14px);justify-content:center;align-items:center;min-height:1px}
+  .band .card{
+    height:clamp(30px,6.2vh,72px);
+    aspect-ratio:1/1;
+    padding:4px;
+    border-radius:clamp(6px,1vh,12px);
+  }
+  .band.hover{filter:brightness(1.12)}
+  .band.hover::after{
+    content:"";position:absolute;inset:0;
+    background:rgba(255,255,255,.22);
+    pointer-events:none;
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    flex:0 0 auto;
+    display:grid;grid-template-columns:1fr auto 1fr;
+    align-items:center;gap:10px;
+  }
+  .btn{
+    -webkit-appearance:none;appearance:none;border:0;font:inherit;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;
+    transition:transform .1s ease,background .15s ease,opacity .15s ease;
+  }
+  .btn:active{transform:scale(.96)}
+  .btn-reset{
+    justify-self:start;
+    background:var(--green);color:#fff;font-weight:800;
+    font-size:clamp(12px,1.9vh,20px);
+    padding:clamp(5px,1vh,11px) clamp(10px,1.4vw,22px);
+    border-radius:99px;
+    box-shadow:0 3px 0 #248a51;
+  }
+  .progress{
+    font-size:clamp(13px,2.1vh,24px);font-weight:800;color:var(--ink);
+    display:flex;align-items:baseline;gap:.35em;
+    background:#fff;border-radius:99px;
+    padding:clamp(4px,.8vh,9px) clamp(10px,1.2vw,20px);
+    box-shadow:var(--shadow);
+  }
+  .progress b{color:var(--green);font-size:1.25em}
+  .nav{justify-self:end;display:flex;gap:clamp(6px,1vw,14px);align-items:center}
+  .arrow{
+    width:clamp(30px,5.4vh,58px);height:clamp(30px,5.4vh,58px);
+    border-radius:50%;
+    background:#fff;color:var(--blue);
+    font-size:clamp(13px,2.4vh,26px);font-weight:800;line-height:1;
+    box-shadow:var(--shadow);
+    border:2px solid #dbe9f7;
+  }
+  .arrow:disabled{opacity:.32;cursor:default;box-shadow:none}
+  .arrow:not(:disabled):active{background:#eaf4ff}
+  .arrow.pulse{animation:pulse 1s ease-in-out 3}
+  @keyframes pulse{50%{transform:scale(1.14);box-shadow:0 0 0 10px rgba(47,127,209,.14),var(--shadow)}}
+
+  .mute{
+    width:clamp(24px,3.6vh,38px);height:clamp(24px,3.6vh,38px);
+    border-radius:50%;background:rgba(255,255,255,.9);
+    font-size:clamp(9px,1.5vh,15px);
+    box-shadow:0 2px 8px rgba(31,95,158,.14);
+    border:1px solid #dbe9f7;
+  }
+
+  /* ---------- toast / confetti ---------- */
+  .toast{
+    position:fixed;left:50%;top:44%;transform:translate(-50%,-50%) scale(.6);
+    background:#fff;color:#2f9e63;
+    font-weight:900;font-size:clamp(20px,4.4vh,52px);
+    padding:.5em .9em;border-radius:24px;
+    box-shadow:0 18px 40px rgba(31,95,158,.24);
+    opacity:0;pointer-events:none;z-index:70;
+    transition:opacity .25s ease, transform .35s cubic-bezier(.2,1.6,.4,1);
+  }
+  .toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:65}
+
+  /* ---------- portrait guard ---------- */
+  #rotate{
+    display:none;position:fixed;inset:0;z-index:99;
+    background:#eaf4fc;color:var(--ink);
+    flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    font-size:16px;font-weight:700;text-align:center;padding:30px;
+  }
+  #rotate span{font-size:44px}
+  @media (orientation:portrait) and (max-width:1000px){
+    #rotate{display:flex}
+    .app{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div id="rotate"><span>⟳</span>Please rotate your tablet.</div>
+
+<div class="app">
+  <header>
+    <h1 id="title">Protein Sorting</h1>
+    <p class="sub" id="subtitle">Drag each food into the right group.</p>
+  </header>
+
+  <main>
+    <!-- ================= LEVEL 1 ================= -->
+    <section class="level" id="level1">
+      <div class="board">
+        <div class="table">
+          <div class="thead">
+            <div>Animal protein</div>
+            <div>Vegetable protein</div>
+          </div>
+          <div class="tbody">
+            <div class="zone" data-accept="animal"></div>
+            <div class="zone" data-accept="veg"></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="tray" id="tray1">
+        <button class="card" data-id="egg"      data-group="animal" data-home="0">
+          <img src="assets/egg.webp" alt="Egg"><span class="cap">Egg</span></button>
+        <button class="card" data-id="tofu"     data-group="veg"    data-home="1">
+          <img src="assets/tofu.webp" alt="Tofu"><span class="cap">Tofu</span></button>
+        <button class="card" data-id="fish"     data-group="animal" data-home="2">
+          <img src="assets/fish.webp" alt="Fish"><span class="cap">Fish</span></button>
+        <button class="card" data-id="soybeans" data-group="veg"    data-home="3">
+          <img src="assets/soybeans.webp" alt="Soybeans"><span class="cap">Soybeans</span></button>
+        <button class="card" data-id="chicken"  data-group="animal" data-home="4">
+          <img src="assets/chicken.webp" alt="Chicken"><span class="cap">Chicken</span></button>
+        <button class="card" data-id="nuts"     data-group="veg"    data-home="5">
+          <img src="assets/nuts.webp" alt="Nuts"><span class="cap">Nuts</span></button>
+      </aside>
+    </section>
+
+    <!-- ================= LEVEL 2 ================= -->
+    <section class="level" id="level2" hidden>
+      <div class="board">
+        <div class="pyramid-wrap">
+          <div class="pyramid">
+            <div class="band" data-accept="t5" style="clip-path:polygon(35% 0,65% 0,72% 100%,28% 100%);background:#f2a03d">
+              <div class="label">Fats, Oils &amp; Salt</div>
+            </div>
+            <div class="band" data-accept="t2" style="clip-path:polygon(28% 0,72% 0,79% 100%,21% 100%);background:#4a90d9">
+              <div class="label">Milk, Beans &amp; Nuts</div>
+              <div class="slots"></div>
+            </div>
+            <div class="band" data-accept="t3" style="clip-path:polygon(21% 0,79% 0,86% 100%,14% 100%);background:#d9534f">
+              <div class="label">Fish, Meat &amp; Eggs</div>
+              <div class="slots"></div>
+            </div>
+            <div class="band" data-accept="t4" style="clip-path:polygon(14% 0,86% 0,93% 100%,7% 100%);background:#7cb95f">
+              <div class="label">Vegetables &amp; Fruit</div>
+              <div class="slots"></div>
+            </div>
+            <div class="band" data-accept="t1" style="clip-path:polygon(7% 0,93% 0,100% 100%,0% 100%);background:#c08a5a">
+              <div class="label">Grains &amp; Potatoes</div>
+              <div class="slots"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="tray" id="tray2">
+        <button class="card" data-id="milk"      data-group="t2" data-home="0">
+          <img src="assets/milk.webp" alt="Milk"><span class="cap">Milk</span></button>
+        <button class="card" data-id="tomato"    data-group="t4" data-home="1">
+          <img src="assets/tomato.webp" alt="Tomato"><span class="cap">Tomato</span></button>
+        <button class="card" data-id="apple"     data-group="t4" data-home="2">
+          <img src="assets/apple.webp" alt="Apple"><span class="cap">Apple</span></button>
+        <button class="card" data-id="soymilk"   data-group="t2" data-home="3">
+          <img src="assets/soymilk.webp" alt="Soy milk"><span class="cap">Soy milk</span></button>
+        <button class="card" data-id="baozi"     data-group="t1" data-home="4">
+          <img src="assets/baozi.webp" alt="Steamed bun"><span class="cap">Bun</span></button>
+        <button class="card" data-id="friedegg"  data-group="t3" data-home="5">
+          <img src="assets/friedegg.webp" alt="Fried egg"><span class="cap">Fried egg</span></button>
+        <button class="card" data-id="sandwich"  data-group="t1" data-home="6">
+          <img src="assets/sandwich.webp" alt="Sandwich"><span class="cap">Sandwich</span></button>
+      </aside>
+    </section>
+  </main>
+
+  <footer>
+    <button class="btn btn-reset" id="reset">Reset</button>
+    <div class="progress"><b id="done">0</b><span>/</span><span id="total">6</span></div>
+    <div class="nav">
+      <button class="btn mute" id="mute" title="Sound">🔊</button>
+      <button class="btn arrow" id="prev" aria-label="Previous">←</button>
+      <button class="btn arrow" id="next" aria-label="Next">→</button>
+    </div>
+  </footer>
+</div>
+
+<div class="toast" id="toast">Great job!</div>
+<canvas id="confetti"></canvas>
+
+<script>
+(function(){
+  'use strict';
+
+  var LEVELS = {
+    1:{title:'Protein Sorting', sub:'Drag each food into the right group.', total:6},
+    2:{title:'Food Pyramid',    sub:'Drag each food to the right level.',  total:7}
+  };
+  var level = 1;
+  var done  = {1:0, 2:0};
+
+  var $ = function(s){ return document.querySelector(s); };
+  var title = $('#title'), subtitle = $('#subtitle');
+  var doneEl = $('#done'), totalEl = $('#total'), toastEl = $('#toast');
+  var prevBtn = $('#prev'), nextBtn = $('#next'), resetBtn = $('#reset');
+
+  /* ---------------- sound ---------------- */
+  var actx = null, muted = false;
+  function unlockAudio(){
+    try{
+      if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      if(actx.state === 'suspended') actx.resume();
+    }catch(e){}
+  }
+  function beep(freq, dur, delay, type, vol){
+    if(!actx || muted) return;
+    var o = actx.createOscillator(), g = actx.createGain();
+    var t = actx.currentTime + (delay || 0);
+    o.type = type || 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol || 0.14, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + (dur || 0.12));
+    o.connect(g); g.connect(actx.destination);
+    o.start(t); o.stop(t + (dur || 0.12) + 0.03);
+  }
+  function sndOk(){ beep(880,.10); beep(1320,.16,.09); }
+  function sndNo(){ beep(220,.18,0,'triangle',.10); }
+  function sndWin(){ [523,659,784,1047].forEach(function(f,i){ beep(f,.22,i*0.11,'sine',.12); }); }
+
+  /* ---------------- confetti ---------------- */
+  var cv = $('#confetti'), ctx = cv.getContext('2d'), parts = [], raf = 0;
+  function sizeCanvas(){
+    var d = window.devicePixelRatio || 1;
+    cv.width = innerWidth * d; cv.height = innerHeight * d;
+    ctx.setTransform(d,0,0,d,0,0);
+  }
+  sizeCanvas();
+  addEventListener('resize', sizeCanvas);
+
+  function confetti(){
+    var colors = ['#f2a03d','#4a90d9','#d9534f','#7cb95f','#33b56b','#f6d55c','#e17fa8'];
+    parts = [];
+    for(var i=0;i<140;i++){
+      parts.push({
+        x: innerWidth*0.5 + (Math.random()-0.5)*innerWidth*0.55,
+        y: innerHeight*0.34 + (Math.random()-0.5)*80,
+        vx: (Math.random()-0.5)*9,
+        vy: -6 - Math.random()*9,
+        s: 5 + Math.random()*7,
+        r: Math.random()*Math.PI,
+        vr: (Math.random()-0.5)*0.3,
+        c: colors[(Math.random()*colors.length)|0],
+        life: 1
+      });
+    }
+    cancelAnimationFrame(raf);
+    var t0 = performance.now();
+    (function tick(t){
+      var dt = Math.min((t - t0)/16.7, 2); t0 = t;
+      ctx.clearRect(0,0,innerWidth,innerHeight);
+      var alive = 0;
+      for(var i=0;i<parts.length;i++){
+        var p = parts[i];
+        p.vy += 0.34*dt; p.vx *= 0.995;
+        p.x += p.vx*dt; p.y += p.vy*dt; p.r += p.vr*dt;
+        if(p.y > innerHeight + 40) continue;
+        alive++;
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+        ctx.fillStyle = p.c; ctx.globalAlpha = Math.max(0, 1 - p.y/innerHeight*0.9);
+        ctx.fillRect(-p.s/2, -p.s/4, p.s, p.s/2);
+        ctx.restore();
+      }
+      if(alive) raf = requestAnimationFrame(tick);
+      else ctx.clearRect(0,0,innerWidth,innerHeight);
+    })(performance.now());
+  }
+
+  /* ---------------- drag ---------------- */
+  var ghost = null, dragCard = null, startRect = null, off = {x:0,y:0}, hoverZone = null;
+
+  function onDown(e){
+    var card = e.target.closest('.card');
+    if(!card || !card.dataset.group || card.classList.contains('locked')) return;
+    if(e.button && e.button !== 0) return;
+
+    e.preventDefault();
+    unlockAudio();
+
+    var r = card.getBoundingClientRect();
+    startRect = r;
+    ghost = card.cloneNode(true);
+    ghost.className = 'card ghost';
+    ghost.style.left = r.left + 'px';
+    ghost.style.top  = r.top + 'px';
+    ghost.style.width = r.width + 'px';
+    ghost.style.height = r.height + 'px';
+    document.body.appendChild(ghost);
+
+    dragCard = card;
+    dragCard.classList.add('taken');
+    off.x = e.clientX - r.left;
+    off.y = e.clientY - r.top;
+
+    try{ card.setPointerCapture(e.pointerId); }catch(err){}
+    document.addEventListener('pointermove', onMove, {passive:false});
+    document.addEventListener('pointerup', onUp);
+    document.addEventListener('pointercancel', onUp);
+  }
+
+  function onMove(e){
+    if(!ghost) return;
+    e.preventDefault();
+    ghost.style.left = (e.clientX - off.x) + 'px';
+    ghost.style.top  = (e.clientY - off.y) + 'px';
+
+    var el = document.elementFromPoint(e.clientX, e.clientY);
+    var zone = el ? el.closest('[data-accept]') : null;
+    if(zone !== hoverZone){
+      if(hoverZone) hoverZone.classList.remove('hover');
+      hoverZone = zone;
+      if(hoverZone) hoverZone.classList.add('hover');
+    }
+  }
+
+  function onUp(e){
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    document.removeEventListener('pointercancel', onUp);
+    if(hoverZone){ hoverZone.classList.remove('hover'); }
+    var zone = hoverZone; hoverZone = null;
+    if(!ghost || !dragCard) return;
+
+    var el = e.clientX != null ? document.elementFromPoint(e.clientX, e.clientY) : null;
+    if(!zone && el) zone = el.closest('[data-accept]');
+
+    if(zone && zone.dataset.accept === dragCard.dataset.group) place(zone);
+    else sendBack();
+  }
+
+  function place(zone){
+    var card = dragCard;
+    var slots = zone.classList.contains('band') ? zone.querySelector('.slots') : zone;
+    ghost.remove(); ghost = null;
+    card.classList.remove('taken');
+    card.classList.add('locked');
+    slots.appendChild(card);
+    if(zone.matches('.zone,.slot')) zone.classList.add('filled');
+
+    dragCard = null;
+    done[level]++;
+    updateProgress();
+    sndOk();
+    if(navigator.vibrate) navigator.vibrate(14);
+
+    if(done[level] >= LEVELS[level].total) setTimeout(celebrate, 260);
+  }
+
+  function sendBack(){
+    var g = ghost, card = dragCard, r = startRect;
+    ghost = null; dragCard = null;
+    if(!g || !card) return;
+    sndNo();
+    g.classList.add('wrong');
+    g.style.transition = 'left .26s cubic-bezier(.4,1.3,.6,1), top .26s cubic-bezier(.4,1.3,.6,1), transform .26s ease';
+    requestAnimationFrame(function(){
+      g.style.left = r.left + 'px';
+      g.style.top  = r.top + 'px';
+      g.style.transform = 'scale(1)';
+    });
+    setTimeout(function(){
+      g.remove();
+      card.classList.remove('taken');
+    }, 270);
+  }
+
+  document.addEventListener('pointerdown', onDown, {passive:false});
+
+  /* ---------------- progress / level ---------------- */
+  function updateProgress(){
+    doneEl.textContent = done[level];
+    totalEl.textContent = LEVELS[level].total;
+  }
+
+  function celebrate(){
+    toastEl.textContent = level === 1 ? 'Great job! Next level →' : 'Great job!';
+    toastEl.classList.add('show');
+    sndWin(); confetti();
+    if(level === 1) nextBtn.classList.add('pulse');
+    setTimeout(function(){
+      toastEl.classList.remove('show');
+      nextBtn.classList.remove('pulse');
+    }, 2600);
+  }
+
+  function showLevel(n){
+    level = n;
+    document.getElementById('level1').hidden = (n !== 1);
+    document.getElementById('level2').hidden = (n !== 2);
+    title.textContent = LEVELS[n].title;
+    subtitle.textContent = LEVELS[n].sub;
+    prevBtn.disabled = (n === 1);
+    nextBtn.disabled = (n === 2);
+    updateProgress();
+  }
+
+  prevBtn.addEventListener('click', function(){ if(level > 1) showLevel(level - 1); });
+  nextBtn.addEventListener('click', function(){ if(level < 2) showLevel(level + 1); });
+
+  /* ---------------- reset ---------------- */
+  resetBtn.addEventListener('click', function(){
+    unlockAudio();
+    var section = document.getElementById('level' + level);
+    var tray = section.querySelector('.tray');
+    var placed = Array.prototype.slice.call(section.querySelectorAll('.card.locked'));
+    placed.sort(function(a,b){ return (+a.dataset.home) - (+b.dataset.home); });
+    placed.forEach(function(c){
+      c.classList.remove('locked');
+      tray.appendChild(c);
+    });
+    section.querySelectorAll('.filled').forEach(function(z){
+      z.classList.remove('filled');
+    });
+    done[level] = 0;
+    updateProgress();
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    beep(420,.09); beep(320,.1,.08);
+  });
+
+  /* ---------------- mute ---------------- */
+  $('#mute').addEventListener('click', function(){
+    muted = !muted;
+    this.textContent = muted ? '🔇' : '🔊';
+  });
+
+  /* ---------------- init ---------------- */
+  showLevel(1);
+  document.addEventListener('touchmove', function(e){
+    if(e.touches.length > 1) e.preventDefault();
+  }, {passive:false});
+})();
+</script>
+</body>
+</html>
