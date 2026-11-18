@@ -95,7 +95,7 @@
     transition:transform .12s ease, box-shadow .12s ease, opacity .18s ease;
   }
   .tray .card{aspect-ratio:1/1.06}
-  .card img{width:100%;height:72%;object-fit:contain;pointer-events:none}
+  .card img{width:100%;height:72%;object-fit:contain;pointer-events:none;-webkit-user-drag:none;user-select:none}
   .card .cap{
     font-size:clamp(11px,1.7vh,19px);
     font-weight:700;color:#4a6785;
@@ -123,7 +123,7 @@
 
   /* ---------- level 1 table ---------- */
   .table{
-    width:100%;height:auto;max-height:100%;
+    width:100%;height:100%;
     display:flex;flex-direction:column;
     border:2px solid #cfe1f4;
     border-radius:clamp(8px,1.2vh,14px);
@@ -139,20 +139,25 @@
   }
   .thead>div{padding:clamp(5px,1.1vh,14px) 4px}
   .thead>div+div{border-left:1px solid rgba(255,255,255,.45)}
-  .tbody{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr}
+  .tbody{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr 1fr}
   .zone{
     margin:clamp(4px,.8vh,10px);
     border:2px dashed #bcd7f0;
     border-radius:clamp(8px,1.4vh,16px);
     background:#f7fbff;
     padding:clamp(6px,1.2vh,16px);
-    min-height:clamp(170px,38vh,420px);
+    min-height:0;
     display:flex;flex-wrap:wrap;gap:clamp(6px,1vh,14px);
     align-items:center;justify-content:center;align-content:center;
     transition:background .15s ease,border-color .15s ease,transform .15s ease;
   }
   .zone.hover{border-color:var(--blue);background:#e9f4ff;transform:scale(1.012)}
   .zone.filled{border:2px solid var(--green);background:#f3fdf7}
+  .zone:empty::after{
+    content:"Drop here";
+    font-size:clamp(13px,2.1vh,24px);font-weight:800;
+    color:#c8d9e9;letter-spacing:.02em;
+  }
   .zone .card{
     width:calc(50% - clamp(3px,.5vh,7px));
     aspect-ratio:1/1.06;
@@ -196,6 +201,38 @@
     background:rgba(255,255,255,.22);
     pointer-events:none;
   }
+
+  /* ---------- level 2: two pyramids ---------- */
+  .level2{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}
+  .level2 .board{align-items:stretch;gap:clamp(10px,2.2vw,44px);padding:clamp(6px,1vh,14px) clamp(6px,1vw,16px)}
+  .pyr-col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:.7vh}
+  .pyr-title{text-align:center;font-weight:800;color:#1d3557;font-size:clamp(11px,1.95vh,21px);letter-spacing:.01em}
+  .pyr-col .pyramid{flex:1 1 auto;height:auto;min-height:0;aspect-ratio:auto}
+  .pyr-col .label{font-size:clamp(9px,1.32vh,15px);line-height:1.14;max-width:92%}
+  .pyr-col .band:first-child{padding-top:.8vh}
+  .pyr-col .band:first-child .label{font-size:clamp(7.5px,1.05vh,12.5px);max-width:32%}
+  .pyr-col .label .nut{display:block;font-size:.86em;font-weight:700;opacity:.92}
+  .pyr-col .band{
+    display:grid;grid-template-rows:auto minmax(0,1fr);grid-template-columns:minmax(0,1fr);
+    justify-items:center;align-items:center;
+    padding:2px 0 3px;
+  }
+  .pyr-col .slots{height:100%;min-height:0;align-items:center;gap:clamp(3px,.7vw,10px)}
+  .pyr-col .card{
+    height:100%;width:auto;aspect-ratio:1;flex:0 0 auto;
+    max-height:clamp(34px,7.6vh,70px);
+  }
+  .tray.tray2{
+    grid-template-columns:repeat(7,1fr);
+    height:auto;
+    min-height:clamp(86px,12.5vh,132px);
+    align-content:center;
+    gap:clamp(5px,.9vw,14px);
+  }
+  .tray.tray2 .card{height:auto;width:100%;aspect-ratio:1/1.02}
+  .level.cleared .tray{display:none}
+  .level.cleared{grid-template-columns:minmax(0,1fr)}
+  .level2.cleared{grid-template-rows:minmax(0,1fr)}
 
   /* ---------- footer ---------- */
   footer{
@@ -310,63 +347,89 @@
 
       <aside class="tray" id="tray1">
         <button class="card" data-id="egg"      data-group="animal" data-home="0">
-          <img src="assets/egg.webp" alt="Egg"><span class="cap">Egg</span></button>
+          <img draggable="false" src="assets/egg.webp" alt="Egg"><span class="cap">Egg</span></button>
         <button class="card" data-id="tofu"     data-group="veg"    data-home="1">
-          <img src="assets/tofu.webp" alt="Tofu"><span class="cap">Tofu</span></button>
+          <img draggable="false" src="assets/tofu.webp" alt="Tofu"><span class="cap">Tofu</span></button>
         <button class="card" data-id="fish"     data-group="animal" data-home="2">
-          <img src="assets/fish.webp" alt="Fish"><span class="cap">Fish</span></button>
+          <img draggable="false" src="assets/fish.webp" alt="Fish"><span class="cap">Fish</span></button>
         <button class="card" data-id="soybeans" data-group="veg"    data-home="3">
-          <img src="assets/soybeans.webp" alt="Soybeans"><span class="cap">Soybeans</span></button>
+          <img draggable="false" src="assets/soybeans.webp" alt="Soyabeans"><span class="cap">Soyabeans</span></button>
         <button class="card" data-id="chicken"  data-group="animal" data-home="4">
-          <img src="assets/chicken.webp" alt="Chicken"><span class="cap">Chicken</span></button>
+          <img draggable="false" src="assets/chicken.webp" alt="Chicken"><span class="cap">Chicken</span></button>
         <button class="card" data-id="nuts"     data-group="veg"    data-home="5">
-          <img src="assets/nuts.webp" alt="Nuts"><span class="cap">Nuts</span></button>
+          <img draggable="false" src="assets/nuts.webp" alt="Nuts"><span class="cap">Nuts</span></button>
       </aside>
     </section>
 
     <!-- ================= LEVEL 2 ================= -->
-    <section class="level" id="level2" hidden>
+    <section class="level level2" id="level2" hidden>
       <div class="board">
-        <div class="pyramid-wrap">
+        <div class="pyr-col">
+          <div class="pyr-title">Minmin&#39;s breakfast</div>
           <div class="pyramid">
-            <div class="band" data-accept="t5" style="clip-path:polygon(35% 0,65% 0,72% 100%,28% 100%);background:#f2a03d">
-              <div class="label">Fats, Oils &amp; Salt</div>
+            <div class="band" data-accept="m-t5" style="clip-path:polygon(35% 0,65% 0,72% 100%,28% 100%);background:#f2a03d">
+              <div class="label">Fats, Oils &amp; Salt<span class="nut">(a little)</span></div>
             </div>
-            <div class="band" data-accept="t2" style="clip-path:polygon(28% 0,72% 0,79% 100%,21% 100%);background:#4a90d9">
-              <div class="label">Milk, Beans &amp; Nuts</div>
+            <div class="band" data-accept="m-t2" style="clip-path:polygon(28% 0,72% 0,79% 100%,21% 100%);background:#4a90d9">
+              <div class="label">Milk, Beans &amp; Nuts<span class="nut">(protein)</span></div>
               <div class="slots"></div>
             </div>
-            <div class="band" data-accept="t3" style="clip-path:polygon(21% 0,79% 0,86% 100%,14% 100%);background:#d9534f">
-              <div class="label">Fish, Meat &amp; Eggs</div>
+            <div class="band" data-accept="m-t3" style="clip-path:polygon(21% 0,79% 0,86% 100%,14% 100%);background:#d9534f">
+              <div class="label">Fish, Meat &amp; Eggs<span class="nut">(protein)</span></div>
               <div class="slots"></div>
             </div>
-            <div class="band" data-accept="t4" style="clip-path:polygon(14% 0,86% 0,93% 100%,7% 100%);background:#7cb95f">
-              <div class="label">Vegetables &amp; Fruit</div>
+            <div class="band" data-accept="m-t4" style="clip-path:polygon(14% 0,86% 0,93% 100%,7% 100%);background:#7cb95f">
+              <div class="label">Vegetables &amp; Fruit<span class="nut">(vitamins)</span></div>
               <div class="slots"></div>
             </div>
-            <div class="band" data-accept="t1" style="clip-path:polygon(7% 0,93% 0,100% 100%,0% 100%);background:#c08a5a">
-              <div class="label">Grains &amp; Potatoes</div>
+            <div class="band" data-accept="m-t1" style="clip-path:polygon(7% 0,93% 0,100% 100%,0% 100%);background:#c08a5a">
+              <div class="label">Grains &amp; Potatoes<span class="nut">(energy)</span></div>
+              <div class="slots"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pyr-col">
+          <div class="pyr-title">Xiaopu&#39;s breakfast</div>
+          <div class="pyramid">
+            <div class="band" data-accept="x-t5" style="clip-path:polygon(35% 0,65% 0,72% 100%,28% 100%);background:#f2a03d">
+              <div class="label">Fats, Oils &amp; Salt<span class="nut">(a little)</span></div>
+            </div>
+            <div class="band" data-accept="x-t2" style="clip-path:polygon(28% 0,72% 0,79% 100%,21% 100%);background:#4a90d9">
+              <div class="label">Milk, Beans &amp; Nuts<span class="nut">(protein)</span></div>
+              <div class="slots"></div>
+            </div>
+            <div class="band" data-accept="x-t3" style="clip-path:polygon(21% 0,79% 0,86% 100%,14% 100%);background:#d9534f">
+              <div class="label">Fish, Meat &amp; Eggs<span class="nut">(protein)</span></div>
+              <div class="slots"></div>
+            </div>
+            <div class="band" data-accept="x-t4" style="clip-path:polygon(14% 0,86% 0,93% 100%,7% 100%);background:#7cb95f">
+              <div class="label">Vegetables &amp; Fruit<span class="nut">(vitamins)</span></div>
+              <div class="slots"></div>
+            </div>
+            <div class="band" data-accept="x-t1" style="clip-path:polygon(7% 0,93% 0,100% 100%,0% 100%);background:#c08a5a">
+              <div class="label">Grains &amp; Potatoes<span class="nut">(energy)</span></div>
               <div class="slots"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <aside class="tray" id="tray2">
-        <button class="card" data-id="milk"      data-group="t2" data-home="0">
-          <img src="assets/milk.webp" alt="Milk"><span class="cap">Milk</span></button>
-        <button class="card" data-id="tomato"    data-group="t4" data-home="1">
-          <img src="assets/tomato.webp" alt="Tomato"><span class="cap">Tomato</span></button>
-        <button class="card" data-id="apple"     data-group="t4" data-home="2">
-          <img src="assets/apple.webp" alt="Apple"><span class="cap">Apple</span></button>
-        <button class="card" data-id="soymilk"   data-group="t2" data-home="3">
-          <img src="assets/soymilk.webp" alt="Soy milk"><span class="cap">Soy milk</span></button>
-        <button class="card" data-id="baozi"     data-group="t1" data-home="4">
-          <img src="assets/baozi.webp" alt="Steamed bun"><span class="cap">Bun</span></button>
-        <button class="card" data-id="friedegg"  data-group="t3" data-home="5">
-          <img src="assets/friedegg.webp" alt="Fried egg"><span class="cap">Fried egg</span></button>
-        <button class="card" data-id="sandwich"  data-group="t1" data-home="6">
-          <img src="assets/sandwich.webp" alt="Sandwich"><span class="cap">Sandwich</span></button>
+      <aside class="tray tray2" id="tray2">
+        <button class="card" data-id="sandwich"   data-group="m-t1" data-home="0">
+          <img draggable="false" src="assets/sandwich.webp" alt="Sandwich"><span class="cap">Sandwich</span></button>
+        <button class="card" data-id="apple"      data-group="x-t4" data-home="1">
+          <img draggable="false" src="assets/apple.webp" alt="Apple"><span class="cap">Apple</span></button>
+        <button class="card" data-id="yoghurt"    data-group="m-t2" data-home="2">
+          <img draggable="false" src="assets/yoghurt.webp" alt="Yoghurt"><span class="cap">Yoghurt</span></button>
+        <button class="card" data-id="baozi"      data-group="x-t1" data-home="3">
+          <img draggable="false" src="assets/baozi.webp" alt="Baozi"><span class="cap">Baozi</span></button>
+        <button class="card" data-id="strawberry" data-group="m-t4" data-home="4">
+          <img draggable="false" src="assets/strawberry.webp" alt="Strawberry"><span class="cap">Strawberry</span></button>
+        <button class="card" data-id="friedegg"   data-group="x-t3" data-home="5">
+          <img draggable="false" src="assets/friedegg.webp" alt="Fried egg"><span class="cap">Fried egg</span></button>
+        <button class="card" data-id="soymilk"    data-group="x-t2" data-home="6">
+          <img draggable="false" src="assets/soymilk.webp" alt="Soya milk"><span class="cap">Soya milk</span></button>
       </aside>
     </section>
   </main>
@@ -406,7 +469,7 @@
 
   var LEVELS = {
     1:{title:'Protein Sorting', sub:'Drag each food into the right group.', total:6},
-    2:{title:'Food Pyramid',    sub:'Drag each food to the right level.',  total:7}
+    2:{title:'Food Pyramid',    sub:'Drag each food to the right level of the right breakfast.',  total:7}
   };
   var level = 1;
   var done  = {1:0, 2:0};
@@ -565,7 +628,10 @@
     sndOk();
     if(navigator.vibrate) navigator.vibrate(14);
 
-    if(done[level] >= LEVELS[level].total) setTimeout(celebrate, 260);
+    if(done[level] >= LEVELS[level].total){
+      document.getElementById('level'+level).classList.add('cleared');
+      setTimeout(celebrate, 260);
+    }
   }
 
   function sendBack(){
@@ -633,6 +699,7 @@
     section.querySelectorAll('.filled').forEach(function(z){
       z.classList.remove('filled');
     });
+    section.classList.remove('cleared');
     done[level] = 0;
     updateProgress();
     ctx.clearRect(0,0,innerWidth,innerHeight);
